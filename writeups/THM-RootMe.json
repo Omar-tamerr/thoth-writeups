@@ -1,0 +1,46 @@
+{
+  "slug":       "THM-RootMe",
+  "room":       "RootMe",
+  "platform":   "TryHackMe",
+  "difficulty": "Easy",
+  "author":     "Omar Tamer",
+  "tags":       ["web", "file-upload", "php", "suid", "python"],
+  "description":"PHP file upload filter bypass, SUID Python for root",
+  "full_writeup_url": "",
+  "key_facts": [
+    "port 22 SSH",
+    "port 80 Apache web server",
+    "gobuster finds /panel/ upload directory",
+    "file upload only allows certain extensions",
+    "rename .php to .php5 to bypass filter",
+    "SUID python binary found",
+    "python -c import os;os.execl('/bin/sh','sh','-p') for root"
+  ],
+  "stages": {
+    "recon": {
+      "nudge":     "Start with an nmap scan — what is running on this machine?",
+      "clue":      "Port 80 is a web server. Open it in the browser and look at what is there.",
+      "near_solve":"nmap -sV -sC <target> — you will find SSH and a web server. The web server is where you start."
+    },
+    "enumeration": {
+      "nudge":     "The web server has more pages than what you can see — have you discovered hidden directories?",
+      "clue":      "Use gobuster to find hidden directories. Look for something that lets you upload files.",
+      "near_solve":"gobuster dir -u http://<target> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt — you will find /panel/ which is a file upload form."
+    },
+    "foothold": {
+      "nudge":     "You found an upload form — what would you upload to get a shell?",
+      "clue":      "A PHP reverse shell would work, but the upload filters certain extensions. Think about alternative PHP extensions.",
+      "near_solve":"Upload a PHP reverse shell but rename it to shell.php5 to bypass the .php filter. Set up a netcat listener first: nc -lvnp 4444 — then upload and visit the file at /uploads/shell.php5"
+    },
+    "privesc": {
+      "nudge":     "You have a shell as www-data — look for binaries with special permissions.",
+      "clue":      "SUID binaries run as the file owner regardless of who runs them. Search for them.",
+      "near_solve":"find / -perm -4000 2>/dev/null — python has the SUID bit set. Run: python -c \"import os;os.execl('/bin/sh','sh','-p')\" to get a root shell."
+    },
+    "flag": {
+      "nudge":     "You should have root — where are the flags on this machine?",
+      "clue":      "Check /root/ and /var/www/ for flag files.",
+      "near_solve":"cat /root/root.txt for root flag. The user flag is at /var/www/user.txt"
+    }
+  }
+}

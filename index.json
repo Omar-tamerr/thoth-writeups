@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "author": "Omar Tamer",
+  "github": "https://github.com/omar-tamerr/thoth-writeups",
+  "updated": "2026-03-14",
+  "writeups": [
+    {
+      "slug":       "THM-Wgel",
+      "room":       "Wgel CTF",
+      "platform":   "TryHackMe",
+      "difficulty": "Easy",
+      "author":     "Omar Tamer",
+      "author_url": "https://omar-tamerr.github.io",
+      "tags":       ["web", "ssh", "privesc", "wget", "enumeration"],
+      "description": "Apache web server, developer comment leaks username, exposed SSH key, wget sudo privesc",
+      "full_writeup_url": "https://omar-tamerr.github.io/wgel.html"
+    }
+  ]
+}

